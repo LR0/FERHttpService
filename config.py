@@ -7,9 +7,14 @@ SWAGGER_HOST = ""  # 请求域名
 EMOTION_MODEL_PATH = './core/trained_models/fer2013_mini_XCEPTION.102-0.66.hdf5'
 
 # 日志配置
+LOG_FILE_PATH = "logs/FERHttpService.log"
+LOG_FORMATTER = '%(name)-12s %(asctime)s level-%(levelname)-8s thread-%(thread)-8d %(message)s'
 API_INFO_FORMAT_GET = '{0} url:{1}'
 API_WARNING_FORMAT_GET = '{0} url:{1} msg:{2}'
 API_ERROR_FORMAT_GET = '{0} url:{1} error:{2}'
+API_INFO_FORMAT_POST = '{0} url:{1} request data:{2}'
+API_WARNING_FORMAT_POST = '{0} url:{1} request data:{2} warn:{3}'
+API_ERROR_FORMAT_POST = '{0} url:{1} request data:{2} error:{3}'
 # 返回错误码，1000~1999日志级别为warn(只影响该次请求)，2000~2999为error(可能影响后续功能的运行)
 FILE_DOESNT_EXIST = 1000
 FILE_FORMAT_ERROR = 1001
