@@ -1,0 +1,10 @@
+app.get_emotion_stream_json()---> url:http://localhost:8080/getEmotionStreamJson/?video_path=qqgg&interval_ms=8 msg:文件不存在
+app.get_emotion_stream_json()---> url:http://localhost:8080/getEmotionStreamJson/?video_path=qqgg&interval_ms=8 msg:文件不存在
+app.get_emotion_stream_json()---> url:http://localhost:8080/getEmotionStreamJson/?video_path=qqgg&interval_ms=8 msg:文件不存在
+app.get_emotion_stream_json()---> url:http://localhost:8080/getEmotionStreamJson/?video_path=qqgg&interval_ms=8 msg:文件不存在
+app.get_emotion_stream_json()---> url:http://localhost:8080/getEmotionStreamJson/?video_path=qqgg&interval_ms=8 msg:文件不存在
+app.get_emotion_stream_json()---> url:http://localhost:8080/getEmotionStreamJson/?video_path=qqgg&interval_ms=8 msg:文件不存在
+app.get_emotion_stream_json()---> url:http://localhost:8080/getEmotionStreamJson/?video_path=qqgg&interval_ms=8 msg:文件不存在
+app.get_emotion_stream_json()---> url:http://localhost:8080/getEmotionStreamJson/?video_path=qqgg&interval_ms=8 msg:文件不存在
+app          2019-10-15 11:49:36,248 level-INFO     thread-17072    app.get_emotion_stream_json()---> url:qqgg
+app          2019-10-15 11:49:36,250 level-WARNING  thread-17072    app.get_emotion_stream_json()---> url:http://localhost:8080/getEmotionStreamJson/?video_path=qqgg&interval_ms=8 msg:文件不存在
