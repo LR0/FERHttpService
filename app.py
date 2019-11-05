@@ -12,11 +12,11 @@ from core import detect_functions
 from core.emotion_detector import EmotionDetector
 from core.face_detectors import DlibFaceDetector
 from core.utils.datasets import get_labels
-
-# 抑制cpu占用率
 from exceptions import APIException
 
 app = Flask(__name__)
+if not os.path.exists('./logs'):
+    os.makedirs('./logs')
 fileTimeHandler = TimedRotatingFileHandler(
     config.LOG_FILE_PATH, when="D", interval=1, backupCount=60,
     encoding="UTF-8", delay=False, utc=True)
