@@ -4,6 +4,7 @@ import numpy as np
 import json
 
 import config
+from core.utils.datasets import get_labels
 from core.utils.inference import draw_text
 from exceptions import APIException
 
@@ -39,10 +40,6 @@ def get_emotion_stream_cut(video_path, detector, frame_interval_ms, start_ms, en
         return []
 
     interval_frame_num = ms2frame(fps, frame_interval_ms)
-    return analyze_video_frames(detector, video_capture, start_frame_no, end_frame_no, interval_frame_num)
-
-
-def analyze_video_frames(detector, video_capture, start_frame_no, end_frame_no, interval_frame_num):
     emotion_stream = []
     if interval_frame_num < 1:
         interval_frame_num = 1  # 防止帧间隔为0的情况
@@ -196,5 +193,56 @@ def get_emotion_stream_json(video_path, detector, frame_interval_ms):
 # 只分析指定范围内的视频，返回json
 def get_emotion_stream_cut_json(video_path, detector, frame_interval_ms, start_ms, end_ms):
     emotion_stream = get_emotion_stream_cut(video_path, detector, frame_interval_ms, start_ms, end_ms)
+    emotion_stream_json = json.dumps(emotion_stream)
+    return emotion_stream_json
+
+
+def get_tiny_emotion_stream_cut(video_path, detector, frame_interval_ms, start_ms, end_ms):
+    video_capture = cv2.VideoCapture(video_path)
+    try:
+        video_capture.isOpened()
+    except Exception as ex:
+        raise ex
+    fps = video_capture.get(cv2.CAP_PROP_FPS)
+    frame_count = video_capture.get(cv2.CAP_PROP_FRAME_COUNT)
+    start_frame_no = ms2frame(fps, start_ms) + 1  # 加一防止为0的情况
+    end_frame_no = ms2frame(fps, end_ms)
+
+    if end_ms < 0 or end_frame_no > frame_count:
+        end_frame_no = frame_count
+    if start_frame_no < 1:
+        start_frame_no = 1
+    if start_frame_no > end_frame_no:
+        return []
+
+    interval_frame_num = ms2frame(fps, frame_interval_ms)
+    emotion_stream = []
+    if interval_frame_num < 1:
+        interval_frame_num = 1  # 防止帧间隔为0的情况
+    while start_frame_no <= end_frame_no:
+        video_capture.set(cv2.CAP_PROP_POS_FRAMES, start_frame_no)
+        frame = video_capture.read()[1]
+        if frame is None or np.size(frame) is 0:
+            start_frame_no += interval_frame_num
+            continue
+        time = int(video_capture.get(cv2.CAP_PROP_POS_MSEC))
+        prediction, _ = detector.detect_biggest(frame)
+        if prediction is None:
+            start_frame_no += interval_frame_num
+            continue
+        # 计算最最大表情值所占百分比，再乘以1000，转为整数，相当于保留三位小数
+        rate = int(np.max(prediction) / np.sum(prediction) * 1000)
+        emotion_text = get_labels('fer2013')[np.argmax(prediction)]
+        emotion_map = {emotion_text:rate}
+        frame_emotion = FrameEmotion(time, emotion_map)
+        # 转换为便于转成json的字典格式
+        emotion_stream.append(frame_emotion.__dict__)
+        start_frame_no += interval_frame_num
+    video_capture.release()
+    return emotion_stream
+
+
+def get_tiny_emotion_stream_cut_json(video_path, detector, frame_interval_ms, start_ms, end_ms):
+    emotion_stream = get_tiny_emotion_stream_cut(video_path, detector, frame_interval_ms, start_ms, end_ms)
     emotion_stream_json = json.dumps(emotion_stream)
     return emotion_stream_json
