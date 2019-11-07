@@ -189,7 +189,7 @@ def get_emotion_stream_json():
             config.API_WARNING_FORMAT_POST.format(fun, request.url, str(data), config.ERROR_MSG[config.PARAMETER_ERROR]))
         raise APIException(406, config.PARAMETER_ERROR)
     try:
-        emotion_stream_json = detect_functions.get_tiny_emotion_stream_cut_json(video_path, emotion_detector, interval_ms, begin_ms, end_ms)
+        emotion_stream_json = detect_functions.get_emotion_stream_cut_json(video_path, emotion_detector, interval_ms, begin_ms, end_ms)
     except APIException as aex:
         app.logger.warning(config.API_WARNING_FORMAT_POST.format(fun, request.url, str(data), config.ERROR_MSG[aex.error_code]))
         raise aex
