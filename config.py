@@ -24,3 +24,16 @@ FUNCTION_VIDEO_UNDONE = 1004  # 视频未分析完
 FUNCTION_RUN_ERROR = 2000
 ERROR_MSG = {FILE_DOESNT_EXIST: '文件不存在', FILE_FORMAT_ERROR: '文件格式错误', FUNCTION_RUN_ERROR: '函数运行出错',
              FUNCTION_RETURN_VOID: '分析结果为空', FUNCTION_VIDEO_UNDONE: '视频未分析完', PARAMETER_ERROR: '参数有错'}
+
+
+class Config(object):  # 创建配置，用类
+    # 任务列表
+    JOBS = [
+        {  # 第二个任务，每隔5S执行一次
+            'id': 'heartbeat',
+            'func': '__main__:postHeartBeat',  # 方法名
+            'args': (),  # 入参
+            'trigger': 'interval',  # interval表示循环任务
+            'seconds': 4,
+        }
+    ]

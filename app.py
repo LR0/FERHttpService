@@ -6,6 +6,8 @@ from flask import Flask, request, Response, jsonify
 from logging.handlers import TimedRotatingFileHandler
 from flasgger import Swagger
 from keras.engine.saving import load_model
+from flask_apscheduler import APScheduler
+import requests
 
 import config
 from core import detect_functions
@@ -15,6 +17,7 @@ from core.utils.datasets import get_labels
 from exceptions import APIException
 
 app = Flask(__name__)
+app.config.from_object(config.Config())  # 为实例化的flask引入配置
 if not os.path.exists('./logs'):
     os.makedirs('./logs')
 fileTimeHandler = TimedRotatingFileHandler(
@@ -182,16 +185,20 @@ def get_emotion_stream_json():
     app.logger.info(config.API_INFO_FORMAT_POST.format(fun, request.url, str(data)))
     if os.path.exists(video_path) is False:
         app.logger.warning(
-            config.API_WARNING_FORMAT_POST.format(fun, request.url, str(data), config.ERROR_MSG[config.FILE_DOESNT_EXIST]))
+            config.API_WARNING_FORMAT_POST.format(fun, request.url, str(data),
+                                                  config.ERROR_MSG[config.FILE_DOESNT_EXIST]))
         raise APIException(406, config.FILE_DOESNT_EXIST)
     if interval_ms <= 0:
         app.logger.warning(
-            config.API_WARNING_FORMAT_POST.format(fun, request.url, str(data), config.ERROR_MSG[config.PARAMETER_ERROR]))
+            config.API_WARNING_FORMAT_POST.format(fun, request.url, str(data),
+                                                  config.ERROR_MSG[config.PARAMETER_ERROR]))
         raise APIException(406, config.PARAMETER_ERROR)
     try:
-        emotion_stream_json = detect_functions.get_emotion_stream_cut_json(video_path, emotion_detector, interval_ms, begin_ms, end_ms)
+        emotion_stream_json = detect_functions.get_emotion_stream_cut_json(video_path, emotion_detector, interval_ms,
+                                                                           begin_ms, end_ms)
     except APIException as aex:
-        app.logger.warning(config.API_WARNING_FORMAT_POST.format(fun, request.url, str(data), config.ERROR_MSG[aex.error_code]))
+        app.logger.warning(
+            config.API_WARNING_FORMAT_POST.format(fun, request.url, str(data), config.ERROR_MSG[aex.error_code]))
         raise aex
     except Exception as ex:
         app.logger.error(config.API_ERROR_FORMAT_POST.format(fun, request.url, str(data), ex.args))
@@ -199,5 +206,12 @@ def get_emotion_stream_json():
     return emotion_stream_json
 
 
+def postHeartBeat():
+    requests.post("http://127.0.0.1:8090/emotionDetect/activateHeart", data="")
+
+
 if __name__ == '__main__':
+    scheduler = APScheduler()
+    scheduler.init_app(app)
+    scheduler.start()
     app.run()
