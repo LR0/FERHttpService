@@ -31,7 +31,7 @@ class Config(object):  # 创建配置，用类
     JOBS = [
         {  # 第二个任务，每隔5S执行一次
             'id': 'heartbeat',
-            'func': '__main__:postHeartBeat',  # 方法名
+            'func': 'app:postHeartBeat',  # 方法名
             'args': (),  # 入参
             'trigger': 'interval',  # interval表示循环任务
             'seconds': 4,

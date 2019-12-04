@@ -210,8 +210,11 @@ def postHeartBeat():
     requests.post("http://127.0.0.1:8090/emotionDetect/activateHeart", data="")
 
 
+# 定时任务
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
+
+
 if __name__ == '__main__':
-    scheduler = APScheduler()
-    scheduler.init_app(app)
-    scheduler.start()
     app.run()
