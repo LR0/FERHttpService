@@ -22,8 +22,10 @@ PARAMETER_ERROR = 1002
 FUNCTION_RETURN_VOID = 1003  # 分析结果为空
 FUNCTION_VIDEO_UNDONE = 1004  # 视频未分析完
 FUNCTION_RUN_ERROR = 2000
+TIMEOUT = 1005
 ERROR_MSG = {FILE_DOESNT_EXIST: '文件不存在', FILE_FORMAT_ERROR: '文件格式错误', FUNCTION_RUN_ERROR: '函数运行出错',
-             FUNCTION_RETURN_VOID: '分析结果为空', FUNCTION_VIDEO_UNDONE: '视频未分析完', PARAMETER_ERROR: '参数有错'}
+             FUNCTION_RETURN_VOID: '分析结果为空', FUNCTION_VIDEO_UNDONE: '视频未分析完', PARAMETER_ERROR: '参数有错', 
+             TIMEOUT: 'timeout'}
 
 
 class Config(object):  # 创建配置，用类
