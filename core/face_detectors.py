@@ -9,7 +9,7 @@ class CvFaceDetector:
         return self.detector.detectMultiScale(gray_image_array, 1.3, 5)
 
     def get_biggest_face(self, gray_image, emotion_offsets):
-        detected_faces, score, idx = self.detect_faces(gray_image)
+        detected_faces = self.detect_faces(gray_image)
         size = 0
         coord = [0, 0, 0, 0]
         # 选出最大的人脸
