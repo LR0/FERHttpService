@@ -6,7 +6,7 @@ class CvFaceDetector:
         self.detector = load_detection_model(config.FACE_DETECTOR_PATH) # 只构建一次模型对象，保存下来重复使用
 
     def detect_faces(self, gray_image_array):
-        return self.detector.run(gray_image_array, 0, 0)
+        return self.detector.detectMultiScale(gray_image_array, 1.3, 5)
 
     def get_biggest_face(self, gray_image, emotion_offsets):
         detected_faces, score, idx = self.detect_faces(gray_image)

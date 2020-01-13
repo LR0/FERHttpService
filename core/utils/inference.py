@@ -19,7 +19,7 @@ def load_detection_model(model_path):
 
 
 def detect_faces(detection_model, gray_image_array):
-    return detection_model.run(gray_image_array, 0, 0)
+    return detection_model.detectMultiScale(gray_image_array, 1.3, 5)
 
 
 def make_face_coordinates(detected_face):
