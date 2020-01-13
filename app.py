@@ -12,7 +12,7 @@ import requests
 import config
 from core import detect_functions
 from core.emotion_detector import EmotionDetector
-from core.face_detectors import DlibFaceDetector
+from core.face_detectors import CvFaceDetector
 from core.utils.datasets import get_labels
 from exceptions import APIException
 
@@ -33,7 +33,7 @@ app.logger.addHandler(fileTimeHandler)
 model = load_model(config.EMOTION_MODEL_PATH, compile=False)
 # web处理异步线程引起的玄学bug，预测必须执行此条才能正确运行，同样，训练得执行model._make_train_function()才可以
 model._make_predict_function()
-emotion_detector = EmotionDetector(labels=get_labels('fer2013'), face_detector=DlibFaceDetector(),
+emotion_detector = EmotionDetector(labels=get_labels('fer2013'), face_detector=CvFaceDetector(),
                                    emotion_classifier=model, emotion_offsets=(10, 10))
 
 # swagger配置

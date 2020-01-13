@@ -1,11 +1,9 @@
-import dlib
+from core.utils.inference import make_face_coordinates, apply_offsets, load_detection_model
+import config
 
-from core.utils.inference import make_face_coordinates, apply_offsets
-
-
-class DlibFaceDetector:
+class CvFaceDetector:
     def __init__(self):
-        self.detector = dlib.get_frontal_face_detector()  # 只构建一次模型对象，保存下来重复使用
+        self.detector = load_detection_model(config.FACE_DETECTOR_PATH) # 只构建一次模型对象，保存下来重复使用
 
     def detect_faces(self, gray_image_array):
         return self.detector.run(gray_image_array, 0, 0)

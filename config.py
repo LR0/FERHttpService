@@ -5,6 +5,7 @@ SWAGGER_DESC = ""  # 配置公共描述内容
 SWAGGER_HOST = ""  # 请求域名
 # 默认模型地址
 EMOTION_MODEL_PATH = './core/trained_models/fer2013_mini_XCEPTION.102-0.66.hdf5'
+FACE_DETECTOR_PATH = './core/trained_models/detection_models/haarcascade_frontalface_default.xml'
 
 # 日志配置
 LOG_FILE_PATH = "logs/FERHttpService.log"
