@@ -8,6 +8,7 @@ import config
 from core.utils.datasets import get_labels
 from core.utils.inference import draw_text
 from exceptions import APIException
+from collections import Counter
 
 
 class FrameEmotion:
@@ -15,6 +16,12 @@ class FrameEmotion:
         self.time = time
         self.emotion = emotion
         self.rate = rate
+
+
+class EmotionStreamResponse:
+    def __init__(self, emotion_stream, pure_color_rate):
+        self.emotion_stream = emotion_stream
+        self.pure_color_rate = pure_color_rate
 
 
 # 根据固定时长抽帧并分析
@@ -116,6 +123,69 @@ def get_emotion_stream_cut_with_timeout(video_path, detector, frame_interval_ms,
         start_frame_no += interval_frame_num
     video_capture.release()
     return emotion_stream
+
+
+# 只分析指定范围内的视频，end_ms小于零代表分析到末尾，增添超时控制,黑屏检测
+def get_emotion_stream_cut_with_timeout_pure_color_detect(video_path, detector, frame_interval_ms, start_ms, end_ms,
+                                                          time_limit_second):
+    video_capture = cv2.VideoCapture(video_path)
+    try:
+        video_capture.isOpened()
+    except Exception as ex:
+        raise ex
+    fps = video_capture.get(cv2.CAP_PROP_FPS)
+    frame_count = video_capture.get(cv2.CAP_PROP_FRAME_COUNT)
+    start_frame_no = ms2frame(fps, start_ms) + 1  # 加一防止为0的情况
+    end_frame_no = ms2frame(fps, end_ms)
+
+    if end_ms < 0 or end_frame_no > frame_count:
+        end_frame_no = frame_count
+    if start_frame_no < 1:
+        start_frame_no = 1
+    if start_frame_no > end_frame_no:
+        return []
+
+    interval_frame_num = ms2frame(fps, frame_interval_ms)
+    emotion_stream = []
+    if interval_frame_num < 1:
+        interval_frame_num = 1  # 防止帧间隔为0的情况
+
+    pure_color_count = 0
+    start_time = Time.time()
+    while start_frame_no <= end_frame_no:
+        # 超时检测
+        time = int(video_capture.get(cv2.CAP_PROP_POS_MSEC))
+        now_time = Time.time()
+        if now_time - start_time > time_limit_second:
+            raise APIException(500, config.TIMEOUT)
+
+        video_capture.set(cv2.CAP_PROP_POS_FRAMES, start_frame_no)
+        frame = video_capture.read()[1]
+        if frame is None or np.size(frame) is 0:
+            start_frame_no += interval_frame_num
+            continue
+        count_pair = Counter(frame.flatten()).most_common(1)
+        color_rate = count_pair[0][1] / (len(frame) * len(frame[0]))
+        if color_rate > 0.86:
+            frame_emotion = FrameEmotionWithBlack(time, "", rate)
+            # 转换为便于转成json的字典格式
+            pure_color_count = pure_color_count + 1
+            emotion_stream.append(frame_emotion.__dict__)
+            continue
+
+        prediction, _ = detector.detect_biggest(frame)
+        if prediction is None:
+            start_frame_no += interval_frame_num
+            continue
+        # 计算最最大表情值所占百分比，再乘以1000，转为整数，再除以1000，变为float相当于保留三位小数
+        rate = int(np.max(prediction) / np.sum(prediction) * 1000) / 1000.0
+        emotion_text = get_labels('fer2013')[np.argmax(prediction)]
+        frame_emotion = FrameEmotion(time, emotion_text, rate)
+        # 转换为便于转成json的字典格式
+        emotion_stream.append(frame_emotion.__dict__)
+        start_frame_no += interval_frame_num
+    video_capture.release()
+    return EmotionStreamResponse(emotion_stream, ((pure_color_count * 1000) / end_frame_no) / 1000.0)
 
 
 def ms2frame(fps, time_ms):
@@ -259,3 +329,13 @@ def get_emotion_stream_cut_json_with_timeout(video_path, detector, frame_interva
                                                          timeout_second)
     emotion_stream_json = json.dumps(emotion_stream)
     return emotion_stream_json
+
+
+# 只分析指定范围内的视频，返回json
+def get_emotion_stream_cut_json_with_timeout_and_pure(video_path, detector, frame_interval_ms, start_ms, end_ms,
+                                                      timeout_second):
+    emotion_stream = get_emotion_stream_cut_with_timeout_pure_color_detect(video_path, detector, frame_interval_ms,
+                                                                           start_ms, end_ms,
+                                                                           timeout_second)
+    response_json = json.dumps(emotion_stream)
+    return response_json

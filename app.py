@@ -132,10 +132,11 @@ def get_emotion_stream_json():
                                                   config.ERROR_MSG[config.PARAMETER_ERROR]))
         raise APIException(406, config.PARAMETER_ERROR)
     try:
-        emotion_stream_json = detect_functions.get_emotion_stream_cut_json_with_timeout(video_path, emotion_detector,
-                                                                                        interval_ms,
-                                                                                        begin_ms, end_ms,
-                                                                                        timeout_second)
+        emotion_stream_json = detect_functions.get_emotion_stream_cut_json_with_timeout_and_pure(video_path,
+                                                                                                 emotion_detector,
+                                                                                                 interval_ms,
+                                                                                                 begin_ms, end_ms,
+                                                                                                 timeout_second)
     except APIException as aex:
         app.logger.warning(
             config.API_WARNING_FORMAT_POST.format(fun, request.url, str(data), config.ERROR_MSG[aex.error_code]))
@@ -154,9 +155,9 @@ def postHeartBeat():
 
 
 # 定时任务
-scheduler = APScheduler()
-scheduler.init_app(app)
-scheduler.start()
+# scheduler = APScheduler()
+# scheduler.init_app(app)
+# scheduler.start()
 
 if __name__ == '__main__':
     app.run()
