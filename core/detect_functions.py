@@ -158,25 +158,34 @@ def get_emotion_stream_cut_with_timeout_pure_color_detect(video_path, detector, 
         now_time = Time.time()
         if now_time - start_time > time_limit_second:
             raise APIException(500, config.TIMEOUT)
-
+        # print(start_frame_no)
         video_capture.set(cv2.CAP_PROP_POS_FRAMES, start_frame_no)
         frame = video_capture.read()[1]
         if frame is None or np.size(frame) is 0:
             start_frame_no += interval_frame_num
             continue
-        count_pair = Counter(frame.flatten()).most_common(1)
-        color_rate = count_pair[0][1] / (len(frame) * len(frame[0]))
-        if color_rate > 0.86:
-            frame_emotion = FrameEmotionWithBlack(time, "", rate)
-            # 转换为便于转成json的字典格式
-            pure_color_count = pure_color_count + 1
-            emotion_stream.append(frame_emotion.__dict__)
-            continue
 
+        frame_list = []
         prediction, _ = detector.detect_biggest(frame)
         if prediction is None:
             start_frame_no += interval_frame_num
+            length = len(frame)
+            for i in range(length):
+                if i % 2 != 0:
+                    continue
+                else:
+                    for j in range(length):
+                        if j % 2 != 0:
+                            continue
+                        else:
+                            frame_list.append(frame[i][j])
+
+            count_pair = Counter(frame_list).most_common(1)
+            color_rate = count_pair[0][1] * 1.0 / (len(frame) * len(frame[0]))
+            if color_rate > 0.86:
+                pure_color_count = pure_color_count + 1
             continue
+
         # 计算最最大表情值所占百分比，再乘以1000，转为整数，再除以1000，变为float相当于保留三位小数
         rate = int(np.max(prediction) / np.sum(prediction) * 1000) / 1000.0
         emotion_text = get_labels('fer2013')[np.argmax(prediction)]
@@ -334,8 +343,8 @@ def get_emotion_stream_cut_json_with_timeout(video_path, detector, frame_interva
 # 只分析指定范围内的视频，返回json
 def get_emotion_stream_cut_json_with_timeout_and_pure(video_path, detector, frame_interval_ms, start_ms, end_ms,
                                                       timeout_second):
-    emotion_stream = get_emotion_stream_cut_with_timeout_pure_color_detect(video_path, detector, frame_interval_ms,
-                                                                           start_ms, end_ms,
-                                                                           timeout_second)
-    response_json = json.dumps(emotion_stream)
+    response = get_emotion_stream_cut_with_timeout_pure_color_detect(video_path, detector, frame_interval_ms,
+                                                                     start_ms, end_ms,
+                                                                     timeout_second)
+    response_json = json.dumps(response)
     return response_json
